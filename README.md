@@ -1,3 +1,3 @@
-# tempat-makan-sekitar
+# Restoran-sekitar
 
-Mencari Tempat makan berdasarkan ip address
+Search restaurant and cafe based on your IP address
