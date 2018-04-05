@@ -11,7 +11,8 @@ const usersRouter = require('./routes/users');
 
 const app = express();
 
-mongoose.connect('mongodb://localhost/...');
+// nama database nya restaurant
+mongoose.connect('mongodb://localhost/restaurant');
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -32,6 +33,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+// test connection
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log('OK')
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
