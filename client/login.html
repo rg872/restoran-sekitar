@@ -8,6 +8,11 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <meta charset="UTF-8">
+    <style>
+    .container{
+      margin-top: 10%;
+    }
+    </style>
   </head>
   <body>
     <script>
@@ -23,11 +28,17 @@
         // for FB.getLoginStatus().
         if (response.status === 'connected') {
           // Logged into your app and Facebook.
+          document.getElementById('loginfbbtn').style.display = 'none'
+          document.getElementById('logoutbtn').style.display = 'block'
+
           testAPI();
         } else {
           // The person is not logged into your app or we are unable to tell.
           document.getElementById('status').innerHTML = 'Please log ' +
             'into this app.';
+
+          document.getElementById('loginfbbtn').style.display = 'block'
+          document.getElementById('logoutbtn').style.display = 'none'
         }
       }
 
@@ -79,11 +90,9 @@
       // Here we run a very simple test of the Graph API after login is
       // successful.  See statusChangeCallback() for when this call is made.
       function testAPI() {
-        FB.api('/me', {fields: ['name', 'email']}, function(response) {
-          document.getElementById('status').innerHTML =
-            'Thanks for logging in, ' + response.name + '!';
-            console.log(response.name);
-            console.log(response.email);
+        FB.api('/me', {fields: ['name', 'email', 'picture']}, function(response) {
+          console.log(response.picture.data.url);
+          localStorage.setItem('photo', response.picture.data.url)
           axios({
             method: 'post',
             url: 'http://localhost:3000/users/signinFb',
@@ -96,6 +105,7 @@
             localStorage.setItem('token', res.data.token);
             if(res.data.status === 'login'){
               // email-nya udah, cuma lempar token
+              alert(res.data.message)
             } else if(res.data.status === 'register'){
               // email-nya enggak ada, register trus lempar token
             }
@@ -119,6 +129,64 @@
         })
       }
 
+      function register(name, email, password) {
+        // let name = document.getElementById('name').value
+        // let email = document.getElementById('email').value
+        // let password = document.getElementById('password').value
+
+        console.log([name, email, password]);
+
+        axios({
+          method: 'post',
+          url: 'http://localhost:3000/users/register',
+          data: {
+            name: name,
+            email: email,
+            password: password
+          }
+        })
+        .then((res)=>{
+          console.log(res);
+          localStorage.setItem('token', res.data.token);
+          if(res.data.already_registered === 'true'){
+            console.log('udah ada akunnya');
+            // email-nya udah, cuma lempar token
+            alert(res.data.message)
+          } else if(res.data.already_registered === 'false'){
+            console.log('blom ada, regis berhasil');
+            // email-nya enggak ada, register trus lempar token
+          }
+        })
+        .catch((err)=>{
+          console.log('ini error------->',err);
+        });
+      }
+
+      function login (email, password) {
+        axios({
+          method: 'post',
+          url: 'http://localhost:3000/users/signin',
+          data: {
+            email: email,
+            password: password
+          }
+        })
+        .then((res)=>{
+          console.log(res);
+          localStorage.setItem('token', res.data.token);
+          if(res.data.status === 'success'){
+            console.log('udah ada akunnya');
+            // email-nya udah, cuma lempar token
+            alert(res.data.message)
+          } else if(res.data.status === 'fail'){
+            console.log('blom ada, regis berhasil');
+            // email-nya enggak ada, register trus lempar token
+          }
+        })
+        .catch((err)=>{
+          console.log('ini error------->',err);
+        });
+      }
 
     </script>
 
@@ -127,15 +195,78 @@
       the JavaScript SDK to present a graphical Login button that triggers
       the FB.login() function when clicked.
     -->
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <div id="loginfbbtn" scope="public_profile,email" class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="login_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="false" onlogin="checkLoginState();"></div>
 
-    <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
-    </fb:login-button>
+          <button id="logoutbtn" class="col-md-6" onclick="logout()">logout</button>
 
-    <button onclick="logout()">logout</button>
+                    <!-- Button trigger modal -->
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+           Already have an account?
+          </button>
+
+          <!-- Modal -->
+          <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+           <div class="modal-dialog" role="document">
+             <div class="modal-content">
+               <div class="modal-header">
+                 <h5 class="modal-title" id="exampleModalLabel">Log in</h5>
+                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                   <span aria-hidden="true">&times;</span>
+                 </button>
+               </div>
+
+               <div class="modal-body">
+                 <form>
+                   <div class="form-group">
+                     <label for="exampleInputEmail1">Email address</label>
+                     <input type="email" class="form-control" id="emaillogin" aria-describedby="emailHelp" placeholder="Enter email" value="">
+                     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                   </div>
+                   <div class="form-group">
+                     <label for="exampleInputPassword1">Password</label>
+                     <input type="password" class="form-control" id="passwordlogin" placeholder="Password" value="">
+                   </div>
+
+                 </form>
+               </div>
+
+               <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                 <button type="button" class="btn btn-primary" onclick="login(document.getElementById('emaillogin').value, document.getElementById('passwordlogin').value)">Log in</button>
+               </div>
+             </div>
+           </div>
+          </div>
+        </div>
 
 
-    <div id="status">
+        <div class="col-md-6">
+          <h1>Register</h1>
+          <form>
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" class="form-control" id="name" placeholder="Enter Full Name" value="">
+            </div>
+            <div class="form-group">
+              <label for="exampleInputEmail1">Email address</label>
+              <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" value="">
+              <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+            </div>
+            <div class="form-group">
+              <label for="exampleInputPassword1">Password</label>
+              <input type="password" class="form-control" id="password" placeholder="Password" value="">
+            </div>
+
+            <button type="submit" class="btn btn-primary" onclick="register(document.getElementById('name').value, document.getElementById('email').value, document.getElementById('password').value)">Submit</button>
+          </form>
+
+        </div>
+      </div>
     </div>
+
 
   </body>
 </html>
