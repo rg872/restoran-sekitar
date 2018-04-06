@@ -9,12 +9,15 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <meta charset="UTF-8">
     <style>
-    .container{
-      margin-top: 10%;
+    #loginCol{
+      margin-top: 30%;
+    }
+    #registerCol{
+      margin-top: 20%;
     }
     </style>
   </head>
-  <body>
+  <body background="https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260">
     <script>
       // This is called with the results from from FB.getLoginStatus().
       function statusChangeCallback(response) {
@@ -28,17 +31,17 @@
         // for FB.getLoginStatus().
         if (response.status === 'connected') {
           // Logged into your app and Facebook.
-          document.getElementById('loginfbbtn').style.display = 'none'
-          document.getElementById('logoutbtn').style.display = 'block'
+          //document.getElementById('loginfbbtn').style.display = 'none'
+          //document.getElementById('logoutbtn').style.display = 'block'
 
           testAPI();
         } else {
           // The person is not logged into your app or we are unable to tell.
-          document.getElementById('status').innerHTML = 'Please log ' +
-            'into this app.';
+          // document.getElementById('status').innerHTML = 'Please log ' +
+          //   'into this app.';
 
-          document.getElementById('loginfbbtn').style.display = 'block'
-          document.getElementById('logoutbtn').style.display = 'none'
+          //document.getElementById('loginfbbtn').style.display = 'block'
+          //document.getElementById('logoutbtn').style.display = 'none'
         }
       }
 
@@ -91,8 +94,9 @@
       // successful.  See statusChangeCallback() for when this call is made.
       function testAPI() {
         FB.api('/me', {fields: ['name', 'email', 'picture']}, function(response) {
-          console.log(response.picture.data.url);
+          console.log(response.name);
           localStorage.setItem('photo', response.picture.data.url)
+          localStorage.setItem('name', response.name)
           axios({
             method: 'post',
             url: 'http://localhost:3000/users/signinFb',
@@ -108,7 +112,9 @@
               alert(res.data.message)
             } else if(res.data.status === 'register'){
               // email-nya enggak ada, register trus lempar token
+              alert(res.data.message)
             }
+            window.location.replace('./index.html')
           })
           .catch((err)=>{
             console.log('ini error------->',err);
@@ -155,6 +161,7 @@
           } else if(res.data.already_registered === 'false'){
             console.log('blom ada, regis berhasil');
             // email-nya enggak ada, register trus lempar token
+            alert(res.data.message)
           }
         })
         .catch((err)=>{
@@ -181,7 +188,9 @@
           } else if(res.data.status === 'fail'){
             console.log('blom ada, regis berhasil');
             // email-nya enggak ada, register trus lempar token
+            alert(res.data.message)
           }
+          window.location.replace('./index.html')
         })
         .catch((err)=>{
           console.log('ini error------->',err);
@@ -197,10 +206,10 @@
     -->
     <div class="container">
       <div class="row">
-        <div class="col-md-6 text-center">
+        <div class="col-md-6" id="loginCol" align="center">
           <div id="loginfbbtn" scope="public_profile,email" class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="login_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="false" onlogin="checkLoginState();"></div>
-
-          <button id="logoutbtn" class="col-md-6" onclick="logout()">logout</button>
+          <br><br><br>
+          <!-- <button id="logoutbtn" class="col-md-6" onclick="logout()">logout</button> -->
 
                     <!-- Button trigger modal -->
           <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
@@ -243,7 +252,7 @@
         </div>
 
 
-        <div class="col-md-6">
+        <div class="col-md-6" id="registerCol">
           <h1>Register</h1>
           <form>
             <div class="form-group">
