@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+     }
+     .navbar{
+       position:fixed;
+       width: 100%;
+       z-index:5;
+     }
+     .container{
+       padding-top: 100px;
+     }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+  <title>Zomato</title>
+</head>
+<body background="https://images.pexels.com/photos/326279/pexels-photo-326279.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- <a class="navbar-brand" href="#">Rest-around</a> -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <p id="prof-pic"></p>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+      <div class="mx-auto order-0">
+          <a class="navbar-brand mx-auto" href="#">Rest-around</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-collapse2">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+      </div>
+      <button class="btn btn-outline-light my-2 my-sm-0" onclick="logout()">Logout</button>
+    </div>
+
+  </nav>
+  <div class="container">
+    <div class="row" id='list-zomato'></div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Location Restoran</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="map"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    window.onload = function(){
+      checkToken()
+      getProfPic()
+    }
+    function getProfPic(){
+      let photo = localStorage.getItem('photo')
+      let name = localStorage.getItem('name')
+      $('#prof-pic').append(`
+        <a target="_blank" href="img_forest.jpg">
+          <img src="${photo}" alt="Forest">
+        </a>
+        <span style="color: white">Welcome, ${name} !</span>
+        `)
+    }
+    function checkToken(){
+      // console.log('check token jalan');
+      let token = localStorage.getItem('token')
+      if(!token){
+        window.location.replace('./login.html')
+      }
+    }
+    axios.get('https://ipapi.co/json/')
+      .then(function (response) {
+        console.log(response.data)
+        console.log(response.data.latitude)
+        console.log(response.data.longitude)
+        axios.get(`https://developers.zomato.com/api/v2.1/geocode?lat=${response.data.latitude}&lon=${response.data.longitude}`,{headers: { 'user-key' : '4fea6930ef5dd45a54f63284d8d71508'}})
+          .then(zomatoResponse=>{
+            // console.log(zomatoResponse.data.nearby_restaurants[0].restaurant)
+            zomatoResponse.data.nearby_restaurants.map(data=>{
+              let obj = {
+                name: data.restaurant.name,
+                currency: data.restaurant.currency,
+                average_cost_for_two: data.restaurant.average_cost_for_two,
+                menu: data.restaurant.cuisines,
+                location: data.restaurant.location.address,
+                rating: data.restaurant.user_rating.aggregate_rating,
+                latitude: data.restaurant.location.latitude,
+                longitude: data.restaurant.location.longitude,
+                image :data.restaurant.thumb,
+                url:data.restaurant.url
+              }
+              $("#list-zomato").append(
+                `<div class="col-md-4">
+                    <div class="image-flip" ontouchstart="this.classList.toggle('hover');">
+                        <div class="mainflip">
+                            <div class="frontside">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <p><img class=" img-fluid" src="${obj.image}" alt="card image"></p>
+                                        <h4 class="card-title">${obj.name}</h4>
+                                        <p class="card-text">Menu: ${obj.menu}</p>
+                                        <p class="card-text">Rating: ${obj.rating}</p>
+                                        <p class="card-text">Cost For Two: ${obj.currency} ${obj.average_cost_for_two}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="backside">
+                                <div class="card">
+                                    <div class="card-body text-center mt-4">
+                                        <h4 class="card-title">Location</h4>
+                                        <p class="card-text">Location: ${obj.location}</p>
+                                        <button class="btn btn-outline-success" onclick="initMap(${obj.latitude},${obj.longitude})" data-toggle="modal" data-target="#exampleModal">Go To Location</i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+              )
+              // console.log(obj)
+            })
+          })
+          .catch(err=>{
+            console.log(err)
+          })
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+
+  </script>
+  <script>
+    function initMap(lati,longi) {
+      console.log(lati+longi);
+      var uluru = {lat:Number(lati), lng: Number(longi)};
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 18,
+        center: uluru
+      });
+      var marker = new google.maps.Marker({
+        position: uluru,
+        icon:'https://cdn3.iconfinder.com/data/icons/map-markers-1/512/cafe-64.png',
+        map: map
+      });
+    }
+  </script>
+  <script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA6AqfhdRP6qYIe3woUOS-KLeZSGFABNE&callback=initMap">
+  </script>
+  <script>
+    // This is called with the results from from FB.getLoginStatus().
+    function statusChangeCallback(response) {
+      console.log('statusChangeCallback');
+      console.log(response);
+
+      // localStorage.setItem('token', response.authResponse.accessToken)
+      // The response object is returned with a status field that lets the
+      // app know the current login status of the person.
+      // Full docs on the response object can be found in the documentation
+      // for FB.getLoginStatus().
+      if (response.status === 'connected') {
+        // Logged into your app and Facebook.
+        //document.getElementById('loginfbbtn').style.display = 'none'
+        //document.getElementById('logoutbtn').style.display = 'block'
+
+        console.log('connected');
+      } else {
+        // The person is not logged into your app or we are unable to tell.
+        // document.getElementById('status').innerHTML = 'Please log ' +
+        //   'into this app.';
+
+        //document.getElementById('loginfbbtn').style.display = 'block'
+        //document.getElementById('logoutbtn').style.display = 'none'
+      }
+    }
+
+    // This function is called when someone finishes with the Login
+    // Button.  See the onlogin handler attached to it in the sample
+    // code below.
+    function checkLoginState() {
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+    }
+
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '195182794582610',
+        cookie     : true,  // enable cookies to allow the server to access
+                            // the session
+        xfbml      : true,  // parse social plugins on this page
+        version    : 'v2.8' // use graph api version 2.8
+      });
+
+      // Now that we've initialized the JavaScript SDK, we call
+      // FB.getLoginStatus().  This function gets the state of the
+      // person visiting this page and can return one of three states to
+      // the callback you provide.  They can be:
+      //
+      // 1. Logged into your app ('connected')
+      // 2. Logged into Facebook, but not your app ('not_authorized')
+      // 3. Not logged into Facebook and can't tell if they are logged into
+      //    your app or not.
+      //
+      // These three cases are handled in the callback function.
+
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+
+    };
+
+    // Load the SDK asynchronously
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    // Here we run a very simple test of the Graph API after login is
+    // successful.  See statusChangeCallback() for when this call is made.
+
+
+    function logout() {
+      console.log('hehehe');
+      FB.getLoginStatus(function(response) {
+        console.log(response);
+        if (response.status === 'connected') {
+          FB.logout(function(response) {
+            console.log('logout', response);
+            localStorage.clear()
+            window.location.replace('./login.html')
+          });
+        }
+      })
+    }
+
+  </script>
+</body>
+
+<style>
+@import url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+#team {
+    background: #eee !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #108d6f;
+    border-color: #108d6f;
+    box-shadow: none;
+    outline: none;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #007b5e;
+    border-color: #007b5e;
+}
+
+section {
+    padding: 60px 0;
+}
+
+section .section-title {
+    text-align: center;
+    color: #007b5e;
+    margin-bottom: 50px;
+    text-transform: uppercase;
+}
+
+#team .card {
+    border: none;
+    background: #ffffff;
+}
+
+.image-flip:hover .backside,
+.image-flip.hover .backside {
+    -webkit-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
+    -o-transform: rotateY(0deg);
+    -ms-transform: rotateY(0deg);
+    transform: rotateY(0deg);
+    border-radius: .25rem;
+    transition-duration: 1.5s;
+}
+
+.image-flip:hover .frontside,
+.image-flip.hover .frontside {
+    -webkit-transform: rotateY(180deg);
+    -moz-transform: rotateY(180deg);
+    -o-transform: rotateY(180deg);
+    transform: rotateY(180deg);
+}
+
+.mainflip {
+    -webkit-transition: 1s;
+    -webkit-transform-style: preserve-3d;
+    -ms-transition: 1s;
+    -moz-transition: 1s;
+    -moz-transform: perspective(1000px);
+    -moz-transform-style: preserve-3d;
+    -ms-transform-style: preserve-3d;
+    transition: 1s;
+    transform-style: preserve-3d;
+    position: relative;
+}
+
+.frontside {
+    position: relative;
+    -webkit-transform: rotateY(0deg);
+    -ms-transform: rotateY(0deg);
+    z-index: 2;
+    margin-bottom: 30px;
+}
+
+.backside {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: white;
+    -webkit-transform: rotateY(-180deg);
+    -moz-transform: rotateY(-180deg);
+    -o-transform: rotateY(-180deg);
+    -ms-transform: rotateY(-180deg);
+    transform: rotateY(-180deg);
+    -webkit-box-shadow: 5px 7px 9px -4px rgb(158, 158, 158);
+    -moz-box-shadow: 5px 7px 9px -4px rgb(158, 158, 158);
+    box-shadow: 5px 7px 9px -4px rgb(158, 158, 158);
+}
+
+.frontside,
+.backside {
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transition: 1s;
+    -webkit-transform-style: preserve-3d;
+    -moz-transition: 1s;
+    -moz-transform-style: preserve-3d;
+    -o-transition: 1s;
+    -o-transform-style: preserve-3d;
+    -ms-transition: 1s;
+    -ms-transform-style: preserve-3d;
+    transition: 1s;
+    transform-style: preserve-3d;
+}
+
+.frontside .card,
+.backside .card {
+    min-height: 312px;
+}
+
+.backside .card a {
+    font-size: 18px;
+    color: #007b5e !important;
+}
+
+.frontside .card .card-title,
+.backside .card .card-title {
+    color: #007b5e !important;
+}
+
+.frontside .card .card-body img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+}
+</style>
+</html>
