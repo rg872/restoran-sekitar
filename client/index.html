@@ -123,7 +123,20 @@
       });
 
   </script>
-
+  <script>
+    function initMap(lati,longi) {
+      console.log(lati+longi);
+      var uluru = {lat:Number(lati), lng: Number(longi)};
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 18,
+        center: uluru
+      });
+      var marker = new google.maps.Marker({
+        position: uluru,
+        map: map
+      });
+    }
+  </script>
   <script async defer
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA6AqfhdRP6qYIe3woUOS-KLeZSGFABNE&callback=initMap">
   </script>
