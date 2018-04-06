@@ -23,7 +23,7 @@
         // for FB.getLoginStatus().
         if (response.status === 'connected') {
           // Logged into your app and Facebook.
-          testAPI();          
+          testAPI();
         } else {
           // The person is not logged into your app or we are unable to tell.
           document.getElementById('status').innerHTML = 'Please log ' +
@@ -82,10 +82,11 @@
         FB.api('/me', {fields: ['name', 'email']}, function(response) {
           document.getElementById('status').innerHTML =
             'Thanks for logging in, ' + response.name + '!';
-
+            console.log(response.name);
+            console.log(response.email);
           axios({
             method: 'post',
-            url: 'http://localhost:3000/users/signin',
+            url: 'http://localhost:3000/users/signinFb',
             data: {
               email: response.email,
               name: response.name
@@ -94,13 +95,13 @@
           .then((res)=>{
             localStorage.setItem('token', res.data.token);
             if(res.data.status === 'login'){
-              // email-nya udah, cuma lempar token              
+              // email-nya udah, cuma lempar token
             } else if(res.data.status === 'register'){
               // email-nya enggak ada, register trus lempar token
             }
           })
           .catch((err)=>{
-            console.log(err);
+            console.log('ini error------->',err);
           });
         });
       }
