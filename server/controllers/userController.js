@@ -3,7 +3,8 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
   signInFb : function(req, res){
-      let logged_user = 
+    console.log(req.body.email);
+      let logged_user =
       {
         email: req.body.email,
         name: req.body.name,
@@ -27,9 +28,9 @@ module.exports = {
               token : token,
               status: 'register'
             });
-          })          
+          })
         }
-        
+
       })
       .catch((err)=>{
         res.status(500).json({
@@ -40,7 +41,7 @@ module.exports = {
   },
 
   register: function(req, res){
-    let register_user = 
+    let register_user =
       {
         email: req.body.email,
         name: req.body.name,
@@ -63,7 +64,7 @@ module.exports = {
             });
           });
         }
-        
+
       })
       .catch((err)=>{
         res.status(500).json({
@@ -74,7 +75,7 @@ module.exports = {
   },
 
   signIn: function(req, res){
-    let logged_user = 
+    let logged_user =
       {
         email: req.body.email,
         password: req.body.password
@@ -93,9 +94,9 @@ module.exports = {
           res.status(400).json({
             message:'Email/password is invalid',
             status: 'fail'
-          });          
+          });
         }
-        
+
       })
       .catch((err)=>{
         res.status(500).json({
@@ -106,7 +107,7 @@ module.exports = {
   },
 
   delete: function(req, res){
-    let deleted_user = 
+    let deleted_user =
       {
         email: req.body.email
       }
@@ -114,10 +115,10 @@ module.exports = {
       User.deleteOne({ email: deleted_user.email })
       .then((respone)=>{
         res.status(200).json({
-          message:'delete user',      
+          message:'delete user',
           respone:respone
         });
-        
+
       })
       .catch((err)=>{
         res.status(500).json({
