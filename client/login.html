@@ -17,7 +17,7 @@
     }
     </style>
   </head>
-  <body>
+  <body background="https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260">
     <script>
       // This is called with the results from from FB.getLoginStatus().
       function statusChangeCallback(response) {
@@ -94,8 +94,9 @@
       // successful.  See statusChangeCallback() for when this call is made.
       function testAPI() {
         FB.api('/me', {fields: ['name', 'email', 'picture']}, function(response) {
-          console.log(response.picture.data.url);
+          console.log(response.name);
           localStorage.setItem('photo', response.picture.data.url)
+          localStorage.setItem('name', response.name)
           axios({
             method: 'post',
             url: 'http://localhost:3000/users/signinFb',
