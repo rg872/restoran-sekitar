@@ -40,7 +40,7 @@
 
       </ul>
       <form class="form-inline my-2 my-lg-0">
-        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Logout</button>
+        <button class="btn btn-outline-light my-2 my-sm-0" onclick='logout' type="submit">Logout</button>
       </form>
     </div>
   </nav>
@@ -64,13 +64,23 @@
   </div>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
+    window.onload = function(){
+      checkToken()
+    }
+    function checkToken(){
+      console.log('check token jalan');
+      let token = localStorage.getItem('token')
+      if(!token){
+        window.location.replace('./login.html')
+      }
+    }
     axios.get('https://ipapi.co/json/')
       .then(function (response) {
         console.log(response.data.latitude)
         console.log(response.data.longitude)
         axios.get(`https://developers.zomato.com/api/v2.1/geocode?lat=-6.1781&lon=106.63`,{headers: { 'user-key' : '4fea6930ef5dd45a54f63284d8d71508'}})
           .then(zomatoResponse=>{
-            console.log(zomatoResponse.data.nearby_restaurants[0])
+            // console.log(zomatoResponse.data.nearby_restaurants[0])
             zomatoResponse.data.nearby_restaurants.map(data=>{
               let obj = {
                 name: data.restaurant.name,
@@ -111,7 +121,7 @@
                     </div>
                 </div>`
               )
-              console.log(obj)
+              // console.log(obj)
             })
           })
           .catch(err=>{
@@ -121,6 +131,7 @@
       .catch(function (error) {
         console.log(error);
       });
+
 
   </script>
   <script>
